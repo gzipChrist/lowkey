@@ -4,90 +4,14 @@ import (
 	"fmt"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
-
-type status struct {
-	platform platform
-	status   platformStatus
-}
-
-var platformState = []status{
-	{
-		platform: snapchat,
-		status:   pending,
-	},
-	{
-		platform: instagram,
-		status:   pending,
-	},
-	{
-		platform: tiktok,
-		status:   pending,
-	},
-	{
-		platform: twitch,
-		status:   pending,
-	},
-	{
-		platform: github,
-		status:   pending,
-	},
-	{
-		platform: youtube,
-		status:   pending,
-	},
-	{
-		platform: facebook,
-		status:   pending,
-	},
-	{
-		platform: mastodon,
-		status:   pending,
-	},
-}
-
-type platformStatus int
-
-const (
-	unavailable platformStatus = iota - 1
-	pending
-	inflight
-	available
-)
-
-var ps = map[platformStatus]string{
-	unavailable: lipgloss.NewStyle().SetString("x").Foreground(lipgloss.Color("#ff0040")).Bold(true).String(),
-	inflight:    lipgloss.NewStyle().SetString("...").Faint(true).String(),
-	available:   lipgloss.NewStyle().SetString("✓").Foreground(lipgloss.Color("#3fe491")).String(),
-}
-
-func (p platformStatus) String() string {
-	return ps[p]
-}
 
 // MainModel is the root state of the app.
 type MainModel struct {
-	username string
-
-	TextInput textinput.Model
-
-	platformState []status
-
-	err error
-}
-
-// NewModel configures the initial model at runtime.
-func NewModel() MainModel {
-	ti := textinput.New()
-	ti.Prompt = " @ "
-	ti.Placeholder = "Enter username"
-	ti.Focus()
-
-	return MainModel{
-		TextInput:     ti,
-		platformState: platformState,
-	}
+	username  string
+	textInput textinput.Model
+	statuses  []socialStatus
+	err       error
 }
 
 // Init returns any number of tea.Cmds at runtime.
@@ -110,8 +34,8 @@ func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Kick off username search.
 		case tea.KeyEnter:
-			if m.TextInput.Value() != "" {
-				m.username = m.TextInput.Value()
+			if m.textInput.Value() != "" {
+				m.username = m.textInput.Value()
 
 				cmds = append(cmds,
 					setStatusInFlight,
@@ -125,29 +49,28 @@ func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					checkMastodon(m.username),
 				)
 			}
-
 		}
 
-	case PlatformResult:
-		platformState[msg.platform-1] = status{
-			platform: msg.platform,
-			status:   msg.isAvailable.Status(),
+	case UsernameResultMsg:
+		m.statuses[msg.social-1] = socialStatus{
+			social: msg.social,
+			status: msg.isAvailable.Status(),
 		}
 
 	case InFlightMsg:
-		for i, p := range m.platformState {
-			m.platformState[i] = status{
-				platform: p.platform,
-				status:   inflight,
+		for i, p := range m.statuses {
+			m.statuses[i] = socialStatus{
+				social: p.social,
+				status: inflight,
 			}
 		}
 
-	// TODO: Pass platform to err message and print error info.
+	// TODO: Pass social to err message and print error info.
 	case ErrMsg:
 
 	}
 
-	m.TextInput, cmd = m.TextInput.Update(msg)
+	m.textInput, cmd = m.textInput.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
@@ -159,10 +82,56 @@ func (m MainModel) View() string {
 		"%s%s%s%s%s%s%s",
 		HeaderView(),
 		"\n",
-		m.TextInput.View(),
+		m.textInput.View(),
 		"\n\n",
-		PlatformsListView(m.platformState),
+		SocialListView(m.statuses),
 		"\n\n",
 		HelpView(),
 	)
+}
+
+// NewModel configures the initial model at runtime.
+func NewModel() MainModel {
+	ti := textinput.New()
+	ti.Prompt = " @ "
+	ti.Placeholder = "Enter username"
+	ti.Focus()
+
+	return MainModel{
+		textInput: ti,
+		statuses: []socialStatus{
+			{
+				social: snapchat,
+				status: pending,
+			},
+			{
+				social: instagram,
+				status: pending,
+			},
+			{
+				social: tiktok,
+				status: pending,
+			},
+			{
+				social: twitch,
+				status: pending,
+			},
+			{
+				social: github,
+				status: pending,
+			},
+			{
+				social: youtube,
+				status: pending,
+			},
+			{
+				social: facebook,
+				status: pending,
+			},
+			{
+				social: mastodon,
+				status: pending,
+			},
+		},
+	}
 }

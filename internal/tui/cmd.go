@@ -13,72 +13,6 @@ import (
 // TODO: Lots of repeated logic, can DRY all these into one method or split in two by socials and websites.
 // Also look into pulling this off the MainModel receiver to keep the receiver for Bubble Tea architecture only.
 
-type platform int
-
-const (
-	snapchat platform = iota + 1
-	instagram
-	tiktok
-	twitch
-	github
-	youtube
-	facebook
-	mastodon
-	dotcom
-	dotdev
-	dotio
-	dotsh
-)
-
-var pm = map[platform]string{
-	snapchat:  "Snapchat",
-	instagram: "Instagram",
-	tiktok:    "TikTok",
-	twitch:    "Twitch",
-	github:    "GitHub",
-	youtube:   "YouTube",
-	facebook:  "Facebook",
-	mastodon:  "Mastodon",
-	//dotcom:    ".com",
-	//dotdev:    ".dev",
-	//dotio:     ".io",
-	//dotsh:     ".sh",
-}
-
-func (p platform) String() string {
-	return pm[p]
-}
-
-var su = map[platform]string{
-	snapchat:  "https://www.snapchat.com/en-US/download",
-	instagram: "https://www.instagram.com/accounts/emailsignup",
-	tiktok:    "https://www.tiktok.com/signup",
-	twitch:    "https://www.twitch.tv/signup",
-	github:    "https://github.com/signup",
-	youtube:   "https://www.youtube.com",
-	facebook:  "https://www.facebook.com/r.php",
-	mastodon:  "https://mastodon.social/auth/sign_up",
-}
-
-func (p platform) SignUpLink() string {
-	return su[p]
-}
-
-var bm = map[platform]string{
-	snapchat:  "https://www.snapchat.com/add/",
-	instagram: "https://instagram.com/",
-	tiktok:    "https://us.tiktok.com/@",
-	twitch:    "https://www.twitch.tv/",
-	github:    "https://github.com/",
-	youtube:   "https://youtube.com/@",
-	facebook:  "https://www.facebook.com/",
-	mastodon:  "https://mastodon.social/@",
-}
-
-func (p platform) BaseUrl() string {
-	return bm[p]
-}
-
 func setStatusPending() tea.Msg {
 	return PendingStatus(pending)
 }
@@ -89,7 +23,7 @@ func setStatusInFlight() tea.Msg {
 
 func checkSnapchat(username string) func() tea.Msg {
 	return func() tea.Msg {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
 		url := snapchat.BaseUrl() + username
@@ -112,14 +46,14 @@ func checkSnapchat(username string) func() tea.Msg {
 		}
 
 		if strings.Contains(string(body), "content=\"Not_Found\"") {
-			return PlatformResult{
-				platform:    snapchat,
+			return UsernameResultMsg{
+				social:      snapchat,
 				isAvailable: true,
 			}
 		}
 
-		return PlatformResult{
-			platform:    snapchat,
+		return UsernameResultMsg{
+			social:      snapchat,
 			isAvailable: false,
 		}
 	}
@@ -128,7 +62,7 @@ func checkSnapchat(username string) func() tea.Msg {
 
 func checkInstagram(username string) func() tea.Msg {
 	return func() tea.Msg {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
 		url := instagram.BaseUrl() + username
@@ -151,14 +85,14 @@ func checkInstagram(username string) func() tea.Msg {
 		}
 
 		if strings.Contains(string(body), "<title>Instagram</title>") {
-			return PlatformResult{
-				platform:    instagram,
+			return UsernameResultMsg{
+				social:      instagram,
 				isAvailable: true,
 			}
 		}
 
-		return PlatformResult{
-			platform:    instagram,
+		return UsernameResultMsg{
+			social:      instagram,
 			isAvailable: false,
 		}
 	}
@@ -166,7 +100,7 @@ func checkInstagram(username string) func() tea.Msg {
 
 func checkTikTok(username string) func() tea.Msg {
 	return func() tea.Msg {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
 		url := tiktok.BaseUrl() + username
@@ -189,14 +123,14 @@ func checkTikTok(username string) func() tea.Msg {
 		}
 
 		if strings.Contains(string(body), "Watch the latest video from .") {
-			return PlatformResult{
-				platform:    tiktok,
+			return UsernameResultMsg{
+				social:      tiktok,
 				isAvailable: true,
 			}
 		}
 
-		return PlatformResult{
-			platform:    tiktok,
+		return UsernameResultMsg{
+			social:      tiktok,
 			isAvailable: false,
 		}
 	}
@@ -204,7 +138,7 @@ func checkTikTok(username string) func() tea.Msg {
 
 func checkTwitch(username string) func() tea.Msg {
 	return func() tea.Msg {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
 		url := twitch.BaseUrl() + username
@@ -227,14 +161,14 @@ func checkTwitch(username string) func() tea.Msg {
 		}
 
 		if strings.Contains(string(body), "content='Twitch is the world") {
-			return PlatformResult{
-				platform:    twitch,
+			return UsernameResultMsg{
+				social:      twitch,
 				isAvailable: true,
 			}
 		}
 
-		return PlatformResult{
-			platform:    twitch,
+		return UsernameResultMsg{
+			social:      twitch,
 			isAvailable: false,
 		}
 	}
@@ -242,7 +176,7 @@ func checkTwitch(username string) func() tea.Msg {
 
 func checkGitHub(username string) func() tea.Msg {
 	return func() tea.Msg {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
 		url := github.BaseUrl() + username
@@ -260,14 +194,14 @@ func checkGitHub(username string) func() tea.Msg {
 		defer resp.Body.Close()
 
 		if resp.StatusCode == http.StatusNotFound {
-			return PlatformResult{
-				platform:    github,
+			return UsernameResultMsg{
+				social:      github,
 				isAvailable: true,
 			}
 		}
 
-		return PlatformResult{
-			platform:    github,
+		return UsernameResultMsg{
+			social:      github,
 			isAvailable: false,
 		}
 	}
@@ -275,7 +209,7 @@ func checkGitHub(username string) func() tea.Msg {
 
 func checkYouTube(username string) func() tea.Msg {
 	return func() tea.Msg {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
 		url := youtube.BaseUrl() + username
@@ -298,14 +232,14 @@ func checkYouTube(username string) func() tea.Msg {
 		}
 
 		if resp.StatusCode == http.StatusNotFound || strings.Contains(string(body), "<title>404 Not Found</title>") {
-			return PlatformResult{
-				platform:    youtube,
+			return UsernameResultMsg{
+				social:      youtube,
 				isAvailable: true,
 			}
 		}
 
-		return PlatformResult{
-			platform:    youtube,
+		return UsernameResultMsg{
+			social:      youtube,
 			isAvailable: false,
 		}
 	}
@@ -313,7 +247,7 @@ func checkYouTube(username string) func() tea.Msg {
 
 func checkFacebook(username string) func() tea.Msg {
 	return func() tea.Msg {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
 		url := facebook.BaseUrl() + username
@@ -336,14 +270,14 @@ func checkFacebook(username string) func() tea.Msg {
 		}
 
 		if strings.Contains(string(body), "<title>") {
-			return PlatformResult{
-				platform:    facebook,
+			return UsernameResultMsg{
+				social:      facebook,
 				isAvailable: false,
 			}
 		}
 
-		return PlatformResult{
-			platform:    facebook,
+		return UsernameResultMsg{
+			social:      facebook,
 			isAvailable: true,
 		}
 	}
@@ -351,7 +285,7 @@ func checkFacebook(username string) func() tea.Msg {
 
 func checkMastodon(username string) func() tea.Msg {
 	return func() tea.Msg {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
 		url := mastodon.BaseUrl() + username
@@ -374,14 +308,14 @@ func checkMastodon(username string) func() tea.Msg {
 		}
 
 		if strings.Contains(string(body), "<title>The page you are looking for") || strings.Contains(string(body), "<title>The page you were looking for") {
-			return PlatformResult{
-				platform:    mastodon,
+			return UsernameResultMsg{
+				social:      mastodon,
 				isAvailable: true,
 			}
 		}
 
-		return PlatformResult{
-			platform:    mastodon,
+		return UsernameResultMsg{
+			social:      mastodon,
 			isAvailable: false,
 		}
 	}

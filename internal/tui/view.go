@@ -18,15 +18,15 @@ func HeaderView() string {
 	return lipgloss.NewStyle().SetString(header).Foreground(lipgloss.Color("#f4d02d")).String()
 }
 
-func PlatformsListView(state []status) string {
+func SocialListView(state []socialStatus) string {
 	var s string
 
 	for _, ps := range state {
 		var l string
 		if ps.status == available {
-			l = ps.platform.SignUpLink()
+			l = ps.social.SignUpLink()
 		}
-		s += fmt.Sprintf("   %s\t%s  %s\n", ps.platform.String(), ps.status.String(), l)
+		s += fmt.Sprintf("   %s\t%s  %s\n", ps.social.String(), ps.status.String(), l)
 	}
 
 	return s

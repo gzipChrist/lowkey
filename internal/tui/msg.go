@@ -4,7 +4,7 @@ import "github.com/charmbracelet/lipgloss"
 
 type availability bool
 
-func (a availability) Status() platformStatus {
+func (a availability) Status() status {
 	s := unavailable
 	if a {
 		s = available
@@ -22,12 +22,12 @@ func (a availability) String() string {
 	return s
 }
 
-type PlatformResult struct {
-	platform    platform
+type UsernameResultMsg struct {
+	social      social
 	isAvailable availability
 }
 
-type InFlightMsg platformStatus
-type PendingStatus platformStatus
+type InFlightMsg status
+type PendingStatus status
 
 type ErrMsg error
