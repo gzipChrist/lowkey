@@ -3,7 +3,7 @@ package main
 import (
 	tea "github.com/charmbracelet/bubbletea"
 	"log"
-	"payton/internal/tui"
+	"lowkey/internal/tui"
 )
 
 func main() {
